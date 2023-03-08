@@ -3,6 +3,9 @@
 	<title>PPIP TRacker</title>
 </head>
 <body>
+	
+	
+	
  
 	<!-- cek apakah sudah login -->
 	<?php 
@@ -12,14 +15,31 @@
 	}
 	?>
  	<h2>Selamat datang, <?php echo $_SESSION['username']; ?>! anda telah login.</h2>
-	<h4>Silahkan Update Data Gaji dan PhDP Anda</h4>
+	<h4>Silahkan Update Data Gaji dan Saldo PPIP Anda</h4>
  
+	
+	
+
 	<?php
 		//mengambil data 
 		include 'koneksi.php';
+		$username = $_SESSION['username'];
+		$result = $koneksi->query("select usia_daftar from user where username='$username'");
+		if ($result->num_rows > 0) {
+  		// output data of each row
+  		while($row = $result->fetch_assoc()) {
+    		//echo "1"."<br/>"."<br/>";
+    		$usia[1]=$row["usia_daftar"];
+  		}
+		} else {
+  		echo "0 results";
+  		}
 	?>
  
-	<form method="post" action="montecarlo1.php">
+
+	<!-- isi data gaji -->
+	
+	<form method="post" action="montecarlo.php">
 		<table>
 			<tr>
 				<td>Update Gaji (data gaji tidak disimpan)</td>
@@ -27,9 +47,9 @@
 				<td><input type="text" name="gaji" placeholder="dalam rupiah tanpa koma"></td>
 			</tr>
 			<tr>
-				<td>PhDP</td>
+				<td>Saldo PPIP</td>
 				<td>:</td>
-				<td><input type="text" name="phdp" placeholder="dalam rupiah tanpa koma"></td>
+				<td><input type="text" name="update_saldo" placeholder="dalam rupiah tanpa koma"></td>
 			</tr>
 			<tr>
 				<td></td>
