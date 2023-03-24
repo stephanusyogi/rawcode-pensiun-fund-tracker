@@ -2,7 +2,7 @@
   
 //A.1. Hitung Return Portofolio PPIP
 //Input: Read Return, Risk, Korelasi, Komposisi tranche investasi, komposisi tranche likuiditas masing-masing portofolio
-$jml_port_ppip=4; //Read jumlah portofolio yang diinput oleh admin
+$jml_port_ppip=4; //Read jumlah portofolio ppipyang diinput oleh admin
 
 for($i=1;$i<=$jml_port_ppip;$i++){
   //$i mencerminkan id dari portofolio
