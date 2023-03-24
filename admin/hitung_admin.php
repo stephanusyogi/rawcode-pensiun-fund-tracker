@@ -15,8 +15,15 @@ for($i=1;$i<=$jml_port_ppip;$i++){
   $risk_fi_ppip[$i]=0.13; //Read risk pendapatan tetap
   $risk_depo_ppip[$i]=0.13; //Read risk deposito
   
+  $komposisi_inv_saham_ppip[$i]=0.13; //Read komposisi saham tranche investasi
+  $komposisi_inv_fi_ppip[$i]=0.13; //Read komposisi pendapatan tetap tranche investasi
+  $komposisi_inv_depo_ppip[$i]=0.13; //Read komposisi deposito tranche investasi
   
-  $return_ppip_investasi=$saham
+  $komposisi_likuid_saham_ppip[$i]=0.13; //Read komposisi saham tranche likuiditas
+  $komposisi_likuid_fi_ppip[$i]=0.13; //Read komposisi pendapatan tetap tranche likuiditas
+  $komposisi_likuid_depo_ppip[$i]=0.13; //Read komposisi deposito tranche likuiditas
+  
+  $return_ppip_inv[$i]= $komposisi_inv_saham_ppip[$i]*$return_saham_ppip[$i] + $komposisi_inv_fi_ppip[$i]*$return_fi_ppip[$i] + $komposisi_inv_depo_ppip[$i]*$return_depo_ppip[$i]
   
 }
 
