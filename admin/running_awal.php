@@ -139,7 +139,7 @@ for($i=1;$i<=$jml;$i++){
 //D. Hitung Montecarlo PPIP
 //Input: Read sisa masa kerja tahun saat awal tahun, portofolio investasi PPIP yang dipilih peserta, return dan risk portofolio ppip, tabel normal inverse;
 $jml=78; // jumlah tahun dari 2023 s.d. 2100
-$pilihan_ppip=1;//Read portofolio PPIP yang dipilih
+$pilihan_ppip=1;//Read portofolio PPIP yang dipilih peserta
 
 //loading tabel normal inverse
 for ($i=1;$i<=10000;$i++){ //$i adalah primary key dari tabel normal inverse yang ada di database
@@ -184,7 +184,7 @@ for ($i=1;$i<=$jml;$i++){
         }
     }
        
-     }
+    
   } else{ //jika sudah pensiun
     for($j=1;$j<=10000;$j++){ //monte carlo 10.000 iterasi
          $nab[$i][$j]=0;
@@ -198,7 +198,7 @@ for ($i=1;$i<=$jml;$i++){
   if($tranche_ppip[$i] != "null"){ //jika masih belum pensiun
       $k=0;
       for ($j=1;$j<=10000;$j++){
-          $percentile_temp1[$k]=$nab[$i][$j]; //loading sementara isi dari NAB untuk kemudian di shorting
+        $percentile_temp1[$k]=$nab[$i][$j]; //loading sementara isi dari NAB untuk kemudian di shorting
         $k++;
       }
       
@@ -206,23 +206,63 @@ for ($i=1;$i<=$jml;$i++){
       
       $k=0;
       for ($j=1;$j<=10000;$j++){
-          $percentile_temp2[$j]=$percentile_temp1[$k]; //mengembalikan lagi ke urutan array yang telah disortir
+        $percentile_temp2[$j]=$percentile_temp1[$k]; //mengembalikan lagi ke urutan array yang telah disortir
         $k++;
       }
       
-      $percentile_95_nab[$i]=$percentile_temp2[round(0.95 * 10000)]; //mengambil nilai percentile 95
-			$percentile_50_nab[$i]=$percentile_temp2[round(0.5 * 10000)]; //mengambil nilai percentile 50
-			$percentile_05_nab[$i]=$percentile_temp2[round(0.05 * 10000)]; //mengambil nilai percentile 5
+      	$percentile_95_nab[$i]=$percentile_temp2[round(0.95 * 10000)]; //mengambil nilai percentile 95
+	$percentile_50_nab[$i]=$percentile_temp2[round(0.5 * 10000)]; //mengambil nilai percentile 50
+	$percentile_05_nab[$i]=$percentile_temp2[round(0.05 * 10000)]; //mengambil nilai percentile 5
     
       
   } else {
-      $percentile_95_nab[$i]=0; // nilai percentile 95 saat sudah pensiun
-			$percentile_50_nab[$i]=0; // nilai percentile 50 saat sudah pensiun
-			$percentile_05_nab[$i]=0; // nilai percentile 5 saat sudah pensiun
+	$percentile_95_nab[$i]=0; // nilai percentile 95 saat sudah pensiun
+	$percentile_50_nab[$i]=0; // nilai percentile 50 saat sudah pensiun
+	$percentile_05_nab[$i]=0; // nilai percentile 5 saat sudah pensiun
   }
   
 }
 
+//--------------------------------------------------------
+//D.8., D.9., dan D.10. Hitung Montecarlo PPIP - hitung return dari Percentile NAB
+//termasuk dengan convert monthly di D.11., D.12., dan D.13. Hitung Montecarlo PPIP - hitung return dari Percentile NAB - convert monthly
+$jml=78; // jumlah tahun dari 2023 s.d. 2100
+for ($i=1;$i<=$jml;$i++){
+	if ($tranche_ppip[$i] != "null"){ //jika masih belum pensiun
+		if ($i==1){
+			
+			//tahunan
+			$percentile_95_return[$i]=($percentile_95_nab[$i]/100)-1;
+			$percentile_50_return[$i]=($percentile_50_nab[$i]/100)-1;
+			$percentile_05_return[$i]=($percentile_05_nab[$i]/100)-1;
+			
+			//convert monthly
+			$percentile_95_return_monthly[$i]=((1+$percentile_95_return[$i])^(1/12))-1;
+			$percentile_50_return_monthly[$i]=((1+$percentile_50_return[$i])^(1/12))-1;
+			$percentile_05_return_monthly[$i]=((1+$percentile_05_return[$i])^(1/12))-1;
+		} else {
+			
+			//tahunan
+			$percentile_95_return[$i]=($percentile_95_nab[$i]/$percentile_95_nab[$i-1])-1;
+			$percentile_50_return[$i]=($percentile_50_nab[$i]/$percentile_50_nab[$i-1])-1;
+			$percentile_05_return[$i]=($percentile_05_nab[$i]/$percentile_05_nab[$i-1])-1;
+			
+			//convert monthly
+			$percentile_95_return_monthly[$i]=((1+$percentile_95_return[$i])^(1/12))-1;
+			$percentile_50_return_monthly[$i]=((1+$percentile_50_return[$i])^(1/12))-1;
+			$percentile_05_return_monthly[$i]=((1+$percentile_05_return[$i])^(1/12))-1;
+		}
+	} else {
+			$percentile_95_return[$i]=0;
+			$percentile_50_return[$i]=0;
+			$percentile_05_return[$i]=0;
+		
+			$percentile_95_return_monthly[$i]=0;
+			$percentile_50_return_monthly[$i]=0;
+			$percentile_05_return_monthly[$i]=0;	
+	}
+	
+}
 
 
 
