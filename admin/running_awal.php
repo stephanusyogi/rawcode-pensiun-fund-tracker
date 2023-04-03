@@ -150,13 +150,14 @@ for ($i=1;$i<=10000;$i++){ //$i adalah primary key dari tabel normal inverse yan
 for ($i=1;$i<=$jml;$i++){
   $sisa_kerja_tahun[$i]=10;//Read sisa masa kerja tahun setiap bulan januari
   $flag_pensiun[$i]=1;//Read flag pensiun setiap bulan januari
+  
   //+++++++++++++++++++++++++++++++++
   //D.1., D.2., dan D.3. Hitung Montecarlo PPIP - hitung tranche, return, dan risk
   if($sisa_kerja_tahun[$i]>2){
     $tranche_ppip[$i]="investasi";//untuk sebelum 2 tahun sisa masa kerja, masuk ke tranche investasi
     $return_ppip[$i]=1;//read return portofolio dari PPIP dengan $pilihan_ppip dan tranche investasi
     $risk_ppip[$i]=1;//read risk portofolio dari PPIP dengan $pilihan_ppip dan tranche investasi
-  } else if ($sisa_kerja_tahun[$i]<=2 && $flag_pensiun[$i] == 0 ){
+  } else if ($sisa_kerja_tahun[$i]<=2 && $flag_pensiun[$i] == 0 ){ //flag pensiun =0 menandakan belum pensiun
     $tranche_ppip[$i]="likuiditas";//untuk setelah 2 tahun sisa masa kerja, masuk ke tranche likuiditas
     $return_ppip[$i]=1;//read return portofolio dari PPIP dengan $pilihan_ppip dan tranche likuiditas
     $risk_ppip[$i]=1;//read risk portofolio dari PPIP dengan $pilihan_ppip dan tranche likuiditas
@@ -189,6 +190,37 @@ for ($i=1;$i<=$jml;$i++){
          $nab[$i][$j]=0;
      }
   }
+  
+  //+++++++++++++++++++++++++++++++++
+  //D.5., D.6., dan D.7. Hitung Montecarlo PPIP - hitung percentile 95, 50, dan 5 dari NAB
+  //Input: NAB yang telah dihitung sebelumnya
+  
+  if($tranche_ppip[$i] != "null"){ //jika masih belum pensiun
+      $k=0;
+      for ($j=1;$j<=10000;$j++){
+          $percentile_temp1[$k]=$nab[$i][$j]; //loading sementara isi dari NAB untuk kemudian di shorting
+        $k++;
+      }
+      
+      sort($percentile_temp1); //shorting array
+      
+      $k=0;
+      for ($j=1;$j<=10000;$j++){
+          $percentile_temp2[$j]=$percentile_temp1[$k]; //mengembalikan lagi ke urutan array yang telah disortir
+        $k++;
+      }
+      
+      $percentile_95_nab[$i]=$percentile_temp2[round(0.95 * 10000)]; //mengambil nilai percentile 95
+			$percentile_50_nab[$i]=$percentile_temp2[round(0.5 * 10000)]; //mengambil nilai percentile 50
+			$percentile_05_nab[$i]=$percentile_temp2[round(0.05 * 10000)]; //mengambil nilai percentile 5
+    
+      
+  } else {
+      $percentile_95_nab[$i]=0; // nilai percentile 95 saat sudah pensiun
+			$percentile_50_nab[$i]=0; // nilai percentile 50 saat sudah pensiun
+			$percentile_05_nab[$i]=0; // nilai percentile 5 saat sudah pensiun
+  }
+  
 }
 
 
