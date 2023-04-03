@@ -399,6 +399,84 @@ for ($i=1;$i<=$jml;$i++){
 }
 
 
+//---------------------------------------------------------
+//F. Perhitungan Simulasi
+//F.1. Simulasi Gaji dan PhDP
+//Input: Read inputan user tentang gaji dan PhDP, tanggal input
+
+$jml=936; // jumlah bulan dari januari 2023 s.d. desember 2100
+$bulan=4;//Read bulan input
+$tahun=2023;// Read tahun input
+$kode_input=($tahun*100)+$bulan; //untuk koding input
+
+$gaji_input=10000000; //Read gaji yang diinput
+$phdp_input=5000000; //Read phdp yang diinput
+
+$gaji_naik=0.075;//Read kenaikan gaji di profile user
+$phdp_naik=0.05;//Read kenaikan phdp di profile user
+
+
+$j=2023; //tahun awal di database
+$k=1;
+$kode=($j*100)+$k; //untuk perbandingan kode input
+for ($i=1;$i<=$jml;$i++){
+	if($kode<$kode_input){
+		if($k==12){
+			$gaji[$i]=0;
+			$phdp[$i]=0;
+			
+			$j=$j+1;
+			$k=1;
+			
+			$kode=($j*100)+$k;
+		} else{
+			$gaji[$i]=0;
+			$phdp[$i]=0;
+			
+			$k=$k+1;
+			
+			$kode=($j*100)+$k;
+		}
+	} else if ($kode==$kode_input){
+		if($k==12){
+			$gaji[$i]=$gaji_input;
+			$phdp[$i]=$phdp_input;
+			
+			$j=$j+1;
+			$k=1;
+			
+			$kode=($j*100)+$k;
+		} else{
+			$gaji[$i]=$gaji_input;
+			$phdp[$i]=$phdp_input;
+			
+			$k=$k+1;
+			
+			$kode=($j*100)+$k;
+		}
+	} else {
+		if($k==12){
+			$gaji[$i]=$gaji[$i-1]*(1+$gaji_naik);
+			$phdp[$i]=$phdp[$i-1]*(1+$phdp_naik);
+			
+			$j=$j+1;
+			$k=1;
+			
+			$kode=($j*100)+$k;
+		} else{
+			$gaji[$i]=$gaji[$i-1];
+			$phdp[$i]=$phdp[$i-1];
+			
+			$k=$k+1;
+			
+			$kode=($j*100)+$k;
+		}
+	}
+//jangan lupa menghapus $gaji dan $phdp dengan update data 
+
+}
+
+
 
 
 
