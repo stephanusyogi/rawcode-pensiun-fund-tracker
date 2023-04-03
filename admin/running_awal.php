@@ -153,12 +153,12 @@ for ($i=1;$i<=$jml;$i++){
   
   //+++++++++++++++++++++++++++++++++
   //D.1., D.2., dan D.3. Hitung Montecarlo PPIP - hitung tranche, return, dan risk
-  if($sisa_kerja_tahun[$i]>2){
-    $tranche_ppip[$i]="investasi";//untuk sebelum 2 tahun sisa masa kerja, masuk ke tranche investasi
+  if($sisa_kerja_tahun[$i]>=2){
+    $tranche_ppip[$i]="investasi";//untuk sisa masa kerja lebih dari atau sama dengan 2 tahun , masuk ke tranche investasi
     $return_ppip[$i]=1;//read return portofolio dari PPIP dengan $pilihan_ppip dan tranche investasi
     $risk_ppip[$i]=1;//read risk portofolio dari PPIP dengan $pilihan_ppip dan tranche investasi
-  } else if ($sisa_kerja_tahun[$i]<=2 && $flag_pensiun[$i] == 0 ){ //flag pensiun =0 menandakan belum pensiun
-    $tranche_ppip[$i]="likuiditas";//untuk setelah 2 tahun sisa masa kerja, masuk ke tranche likuiditas
+  } else if ($sisa_kerja_tahun[$i]<2 && $flag_pensiun[$i] == 0 ){ //flag pensiun =0 menandakan belum pensiun
+    $tranche_ppip[$i]="likuiditas";//untuk sisa masa kerja kurang dari 2 tahun , masuk ke tranche likuiditas
     $return_ppip[$i]=1;//read return portofolio dari PPIP dengan $pilihan_ppip dan tranche likuiditas
     $risk_ppip[$i]=1;//read risk portofolio dari PPIP dengan $pilihan_ppip dan tranche likuiditas
   } else {
@@ -176,18 +176,18 @@ for ($i=1;$i<=$jml;$i++){
         if($j==1){ // untuk perhitungan awal (karena angka sebelumnya indeks dari NAB adalah 100)
             
             $acak= mt_rand(1,10000); //generate angka acak dari 1 s.d. 10.000. (angka acak sesuai dengan primary key dari tabel normal inverse dalam database)
-            $nab[$i][$j]=round(100 * (1 + ($return_ppip[$i] / 100) + (($risk_ppip[$i] / 100) * $tabel_norminv[$acak]) ),2);
+            $nab_ppip[$i][$j]=round(100 * (1 + ($return_ppip[$i] / 100) + (($risk_ppip[$i] / 100) * $tabel_norminv[$acak]) ),2);
         } else{
           
             $acak= mt_rand(1,10000); //generate angka acak dari 1 s.d. 10.000. (angka acak sesuai dengan primary key dari tabel normal inverse dalam database)
-            $nab[$i][$j]=round($nab[$i-1][$j] * (1 + ($return_ppip[$i] / 100) + (($risk_ppip[$i] / 100) * $tabel_norminv[$acak]) ),2);
+            $nab_ppip[$i][$j]=round($nab_ppip[$i-1][$j] * (1 + ($return_ppip[$i] / 100) + (($risk_ppip[$i] / 100) * $tabel_norminv[$acak]) ),2);
         }
     }
        
     
   } else{ //jika sudah pensiun
     for($j=1;$j<=10000;$j++){ //monte carlo 10.000 iterasi
-         $nab[$i][$j]=0;
+         $nab_ppip[$i][$j]=0;
      }
   }
   
@@ -198,7 +198,7 @@ for ($i=1;$i<=$jml;$i++){
   if($tranche_ppip[$i] != "null"){ //jika masih belum pensiun
       $k=0;
       for ($j=1;$j<=10000;$j++){
-        $percentile_temp1[$k]=$nab[$i][$j]; //loading sementara isi dari NAB untuk kemudian di shorting
+        $percentile_temp1[$k]=$nab_ppip[$i][$j]; //loading sementara isi dari NAB untuk kemudian di shorting
         $k++;
       }
       
@@ -210,17 +210,17 @@ for ($i=1;$i<=$jml;$i++){
         $k++;
       }
       
-      	$percentile_95_nab[$i]=$percentile_temp2[round(0.95 * 10000)]; //mengambil nilai percentile 95
-	$percentile_50_nab[$i]=$percentile_temp2[round(0.5 * 10000)]; //mengambil nilai percentile 50
-	$percentile_05_nab[$i]=$percentile_temp2[round(0.05 * 10000)]; //mengambil nilai percentile 5
+      	$percentile_95_nab_ppip[$i]=$percentile_temp2[round(0.95 * 10000)]; //mengambil nilai percentile 95
+	$percentile_50_nab_ppip[$i]=$percentile_temp2[round(0.5 * 10000)]; //mengambil nilai percentile 50
+	$percentile_05_nab_ppip[$i]=$percentile_temp2[round(0.05 * 10000)]; //mengambil nilai percentile 5
     
       
   } else {
-	$percentile_95_nab[$i]=0; // nilai percentile 95 saat sudah pensiun
-	$percentile_50_nab[$i]=0; // nilai percentile 50 saat sudah pensiun
-	$percentile_05_nab[$i]=0; // nilai percentile 5 saat sudah pensiun
+	$percentile_95_nab_ppip[$i]=0; // nilai percentile 95 saat sudah pensiun
+	$percentile_50_nab_ppip[$i]=0; // nilai percentile 50 saat sudah pensiun
+	$percentile_05_nab_ppip[$i]=0; // nilai percentile 5 saat sudah pensiun
   }
-  
+  //Output: Create $percentile_95_nab_ppip[$i], $percentile_50_nab_ppip[$i], dan $percentile_05_nab_ppip[$i]
 }
 
 //--------------------------------------------------------
@@ -232,37 +232,173 @@ for ($i=1;$i<=$jml;$i++){
 		if ($i==1){
 			
 			//tahunan
-			$percentile_95_return[$i]=($percentile_95_nab[$i]/100)-1;
-			$percentile_50_return[$i]=($percentile_50_nab[$i]/100)-1;
-			$percentile_05_return[$i]=($percentile_05_nab[$i]/100)-1;
+			$percentile_95_return_ppip[$i]=($percentile_95_nab_ppip[$i]/100)-1;
+			$percentile_50_return_ppip[$i]=($percentile_50_nab_ppip[$i]/100)-1;
+			$percentile_05_return_ppip[$i]=($percentile_05_nab_ppip[$i]/100)-1;
 			
 			//convert monthly
-			$percentile_95_return_monthly[$i]=((1+$percentile_95_return[$i])^(1/12))-1;
-			$percentile_50_return_monthly[$i]=((1+$percentile_50_return[$i])^(1/12))-1;
-			$percentile_05_return_monthly[$i]=((1+$percentile_05_return[$i])^(1/12))-1;
+			$percentile_95_return_monthly_ppip[$i]=((1+$percentile_95_return_ppip[$i])^(1/12))-1;
+			$percentile_50_return_monthly_ppip[$i]=((1+$percentile_50_return_ppip[$i])^(1/12))-1;
+			$percentile_05_return_monthly_ppip[$i]=((1+$percentile_05_return_ppip[$i])^(1/12))-1;
 		} else {
 			
 			//tahunan
-			$percentile_95_return[$i]=($percentile_95_nab[$i]/$percentile_95_nab[$i-1])-1;
-			$percentile_50_return[$i]=($percentile_50_nab[$i]/$percentile_50_nab[$i-1])-1;
-			$percentile_05_return[$i]=($percentile_05_nab[$i]/$percentile_05_nab[$i-1])-1;
+			$percentile_95_return_ppip[$i]=($percentile_95_nab_ppip[$i]/$percentile_95_nab_ppip[$i-1])-1;
+			$percentile_50_return_ppip[$i]=($percentile_50_nab_ppip[$i]/$percentile_50_nab_ppip[$i-1])-1;
+			$percentile_05_return_ppip[$i]=($percentile_05_nab_ppip[$i]/$percentile_05_nab_ppip[$i-1])-1;
 			
 			//convert monthly
-			$percentile_95_return_monthly[$i]=((1+$percentile_95_return[$i])^(1/12))-1;
-			$percentile_50_return_monthly[$i]=((1+$percentile_50_return[$i])^(1/12))-1;
-			$percentile_05_return_monthly[$i]=((1+$percentile_05_return[$i])^(1/12))-1;
+			$percentile_95_return_monthly_ppip[$i]=((1+$percentile_95_return_ppip[$i])^(1/12))-1;
+			$percentile_50_return_monthly_ppip[$i]=((1+$percentile_50_return_ppip[$i])^(1/12))-1;
+			$percentile_05_return_monthly_ppip[$i]=((1+$percentile_05_return_ppip[$i])^(1/12))-1;
 		}
 	} else {
-			$percentile_95_return[$i]=0;
-			$percentile_50_return[$i]=0;
-			$percentile_05_return[$i]=0;
+			$percentile_95_return_ppip[$i]=0;
+			$percentile_50_return_ppip[$i]=0;
+			$percentile_05_return_ppip[$i]=0;
 		
-			$percentile_95_return_monthly[$i]=0;
-			$percentile_50_return_monthly[$i]=0;
-			$percentile_05_return_monthly[$i]=0;	
+			$percentile_95_return_monthly_ppip[$i]=0;
+			$percentile_50_return_monthly_ppip[$i]=0;
+			$percentile_05_return_monthly_ppip[$i]=0;	
 	}
-	
+	//Output: Create $percentile_95_return_ppip[$i], $percentile_50_return_ppip[$i], $percentile_05_return_ppip[$i], $percentile_95_return_monthly_ppip[$i], $percentile_50_return_monthly_ppip[$i], dan $percentile_05_return_monthly_ppip[$i]
 }
+
+
+//----------------------------------------------------------------------------------
+//E. Hitung Montecarlo Personal Keuangan
+//Input: Read sisa masa kerja tahun saat awal tahun, portofolio investasi Personal yang dipilih peserta, return dan risk portofolio Personal, tabel normal inverse;
+$jml=78; // jumlah tahun dari 2023 s.d. 2100
+$pilihan_personal=1;//Read portofolio Personal yang dipilih peserta
+
+//loading tabel normal inverse
+for ($i=1;$i<=10000;$i++){ //$i adalah primary key dari tabel normal inverse yang ada di database
+    $tabel_norminv[$i]=1;//Read tabel normal inverse
+}
+
+//mulai perhitungan
+for ($i=1;$i<=$jml;$i++){
+  $sisa_kerja_tahun[$i]=10;//Read sisa masa kerja tahun setiap bulan januari
+  $flag_pensiun[$i]=1;//Read flag pensiun setiap bulan januari
+  
+  //+++++++++++++++++++++++++++++++++
+  //E.1., E.2., dan E.3. Hitung Montecarlo Personal - hitung tranche, return, dan risk
+  if($sisa_kerja_tahun[$i]>=7){
+    $tranche_personal[$i]="tranche 1";//untuk sisa masa kerja lebih dari atau sama dengan 7 tahun , masuk ke tranche 1
+    $return_personal[$i]=1;//read return portofolio personal dengan $pilihan_personal dan tranche 1
+    $risk_personal[$i]=1;//read risk portofolio personal dengan $pilihan_personal dan tranche 1
+  } else if($sisa_kerja_tahun[$i]>=2){
+    $tranche_personal[$i]="tranche 2";//untuk sisa masa kerja kurang dari 7 tahun sampai dengan 2 tahun , masuk ke tranche 2
+    $return_personal[$i]=1;//read return portofolio personal dengan $pilihan_personal dan tranche 2
+    $risk_personal[$i]=1;//read risk portofolio personal dengan $pilihan_personal dan tranche 2
+  } else if ($sisa_kerja_tahun[$i]<2 && $flag_pensiun[$i] == 0 ){ //flag pensiun =0 menandakan belum pensiun
+    $tranche_personal[$i]="tranche 3";//untuk sisa masa kerja kurang dari 2 tahun , masuk ke tranche 3
+    $return_personal[$i]=1;//read return portofolio personal dengan $pilihan_personal dan tranche 3
+    $risk_personal[$i]=1;//read risk portofolio personal dengan $pilihan_personal dan tranche 3
+  } else {
+    $tranche_personal[$i]="null";//sudah pensiun
+    $return_personal[$i]="null";//sudah pensiun
+    $risk_personal[$i]="null";//sudah pensiun
+  }
+  //Output: Create $tranche_personal[$i], $return_personal[$i], $risk_personal[$i]
+  
+  //+++++++++++++++++++++++++++++++++
+  //E.4. Hitung Montecarlo personal - hitung NAB
+  if($tranche_personal[$i] != "null"){ //jika masih belum pensiun
+    
+     for($j=1;$j<=10000;$j++){      //monte carlo 10.000 iterasi
+        if($j==1){ // untuk perhitungan awal (karena angka sebelumnya indeks dari NAB adalah 100)
+            
+            $acak= mt_rand(1,10000); //generate angka acak dari 1 s.d. 10.000. (angka acak sesuai dengan primary key dari tabel normal inverse dalam database)
+            $nab_personal[$i][$j]=round(100 * (1 + ($return_personal[$i] / 100) + (($risk_personal[$i] / 100) * $tabel_norminv[$acak]) ),2);
+        } else{
+          
+            $acak= mt_rand(1,10000); //generate angka acak dari 1 s.d. 10.000. (angka acak sesuai dengan primary key dari tabel normal inverse dalam database)
+            $nab_personal[$i][$j]=round($nab_personal[$i-1][$j] * (1 + ($return_personal[$i] / 100) + (($risk_personal[$i] / 100) * $tabel_norminv[$acak]) ),2);
+        }
+    }
+       
+    
+  } else{ //jika sudah pensiun
+    for($j=1;$j<=10000;$j++){ //monte carlo 10.000 iterasi
+         $nab_personal[$i][$j]=0;
+     }
+  }
+  
+  //+++++++++++++++++++++++++++++++++
+  //E.5., E.6., dan E.7. Hitung Montecarlo PERSONAL - hitung percentile 95, 50, dan 5 dari NAB
+  //Input: NAB yang telah dihitung sebelumnya
+  
+  if($tranche_personal[$i] != "null"){ //jika masih belum pensiun
+      $k=0;
+      for ($j=1;$j<=10000;$j++){
+        $percentile_temp1[$k]=$nab_personal[$i][$j]; //loading sementara isi dari NAB untuk kemudian di shorting
+        $k++;
+      }
+      
+      sort($percentile_temp1); //shorting array
+      
+      $k=0;
+      for ($j=1;$j<=10000;$j++){
+        $percentile_temp2[$j]=$percentile_temp1[$k]; //mengembalikan lagi ke urutan array yang telah disortir
+        $k++;
+      }
+      
+      	$percentile_95_nab_personal[$i]=$percentile_temp2[round(0.95 * 10000)]; //mengambil nilai percentile 95
+	$percentile_50_nab_personal[$i]=$percentile_temp2[round(0.5 * 10000)]; //mengambil nilai percentile 50
+	$percentile_05_nab_personal[$i]=$percentile_temp2[round(0.05 * 10000)]; //mengambil nilai percentile 5
+    
+      
+  } else {
+	$percentile_95_nab_personal[$i]=0; // nilai percentile 95 saat sudah pensiun
+	$percentile_50_nab_personal[$i]=0; // nilai percentile 50 saat sudah pensiun
+	$percentile_05_nab_personal[$i]=0; // nilai percentile 5 saat sudah pensiun
+  }
+  //Output: Create $percentile_95_nab_personal[$i], $percentile_50_nab_personal[$i], dan $percentile_05_nab_personal[$i]
+}
+
+//--------------------------------------------------------
+//E.8., E.9., dan E.10. Hitung Montecarlo PERSONAL - hitung return dari Percentile NAB
+//termasuk dengan convert monthly di E.11., E.12., dan E.13. Hitung Montecarlo PERSONAL - hitung return dari Percentile NAB - convert monthly
+$jml=78; // jumlah tahun dari 2023 s.d. 2100
+for ($i=1;$i<=$jml;$i++){
+	if ($tranche_personal[$i] != "null"){ //jika masih belum pensiun
+		if ($i==1){
+			
+			//tahunan
+			$percentile_95_return_personal[$i]=($percentile_95_nab_personal[$i]/100)-1;
+			$percentile_50_return_personal[$i]=($percentile_50_nab_personal[$i]/100)-1;
+			$percentile_05_return_personal[$i]=($percentile_05_nab_personal[$i]/100)-1;
+			
+			//convert monthly
+			$percentile_95_return_monthly_personal[$i]=((1+$percentile_95_return_personal[$i])^(1/12))-1;
+			$percentile_50_return_monthly_personal[$i]=((1+$percentile_50_return_personal[$i])^(1/12))-1;
+			$percentile_05_return_monthly_personal[$i]=((1+$percentile_05_return_personal[$i])^(1/12))-1;
+		} else {
+			
+			//tahunan
+			$percentile_95_return_personal[$i]=($percentile_95_nab_personal[$i]/$percentile_95_nab_personal[$i-1])-1;
+			$percentile_50_return_personal[$i]=($percentile_50_nab_personal[$i]/$percentile_50_nab_personal[$i-1])-1;
+			$percentile_05_return_personal[$i]=($percentile_05_nab_personal[$i]/$percentile_05_nab_personal[$i-1])-1;
+			
+			//convert monthly
+			$percentile_95_return_monthly_personal[$i]=((1+$percentile_95_return_personal[$i])^(1/12))-1;
+			$percentile_50_return_monthly_personal[$i]=((1+$percentile_50_return_personal[$i])^(1/12))-1;
+			$percentile_05_return_monthly_personal[$i]=((1+$percentile_05_return_personal[$i])^(1/12))-1;
+		}
+	} else {
+			$percentile_95_return_personal[$i]=0;
+			$percentile_50_return_personal[$i]=0;
+			$percentile_05_return_personal[$i]=0;
+		
+			$percentile_95_return_monthly_personal[$i]=0;
+			$percentile_50_return_monthly_personal[$i]=0;
+			$percentile_05_return_monthly_personal[$i]=0;	
+	}
+	//Output: Create $percentile_95_return_personal[$i], $percentile_50_return_personal[$i], $percentile_05_return_personal[$i], $percentile_95_return_monthly_personal[$i], $percentile_50_return_monthly_personal[$i], dan $percentile_05_return_monthly_personal[$i]
+}
+
+
 
 
 
