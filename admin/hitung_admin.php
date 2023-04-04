@@ -38,6 +38,7 @@ for($i=1;$i<=$jml_port_ppip;$i++){
   $risk_ppip_likuid_step2[$i]=2*$komposisi_likuid_saham_ppip[$i]*$komposisi_likuid_fi_ppip[$i]*$risk_saham_ppip[$i]*$risk_fi_ppip[$i]*$korel_saham_fi_ppip[$i]+ 2*$komposisi_likuid_saham_ppip[$i]*$komposisi_likuid_depo_ppip[$i]*$risk_saham_ppip[$i]*$risk_depo_ppip[$i]*$korel_saham_depo_ppip[$i]+2*$komposisi_likuid_fi_ppip[$i]*$komposisi_likuid_depo_ppip[$i]*$risk_fi_ppip[$i]*$risk_depo_ppip[$i]*$korel_fi_depo_ppip[$i];
   $risk_ppip_likuid[$i]=sqrt($risk_ppip_likuid_step1[$i]+$risk_ppip_likuid_step2[$i]);
   
+  //Output: Create $return_ppip_inv[$i], $return_ppip_likuid[$i], $risk_ppip_inv[$i], dan $risk_ppip_likuid[$i]
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
