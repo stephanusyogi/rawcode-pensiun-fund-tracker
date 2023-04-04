@@ -248,7 +248,7 @@ for($i=1;$i<=$jml_port_personal;$i++){
 }
 
 
-
+//Output: Create $return_personal_tranche1[$i], $return_personal_tranche2[$i], $return_personal_tranche3[$i], $risk_personal_tranche1[$i], $risk_personal_tranche2[$i], dan $risk_personal_tranche3[$i]
 
 ?>
 
