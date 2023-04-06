@@ -578,7 +578,7 @@ for ($i=1;$i<=$jml;$i++){
 
 //---------------------------------------------------------
 //F.3. Simulasi PPIP
-//Input: variabel $gaji{$i] yang ada di memory serta flag pensiun, status mp yang sudah dihitung sebelumnya, Read tambahan iuran ppip, Read Saldo PPIP
+//Input: variabel $gaji{$i] yang ada di memory serta flag pensiun, status mp yang sudah dihitung sebelumnya, Read tambahan iuran ppip, Read Saldo PPIP, Read pilihan pembayaran PPIP di profil user
 
 //F.3.1. Simulasi PPIP - Hitung iuran
 
@@ -596,16 +596,34 @@ $persentase_tambahan_iuran_ppip=0.1;// Read tambahan iuran ppip di profil user
 
 $saldo_ppip_input=0; // Read saldo ppip yang diinput (saldo diasumsikan diinput di awal bulan)
 
+//nilai default pilihan pembayaran PPIP
+//Input: Read pilihan pembayaran PPIP, Read kupon SBN/SBSN dan beserta pajak dari profil user, Read Harga anuitas dari profil user
+//pembayaran PPIP jika 1=anuitas; 2=kupon SBN/SBSN
+
+$pembayaran_ppip=1;//Read pilihan pembayaran PPIP (pembayaran PPIP jika 1=anuitas; 2=kupon SBN/SBSN)
+if($pembayaran_ppip==1){
+	$harga_anuitas_ppip =136;//Read harga anuitas masing-masing user
+	
+	$kupon_sbn_ppip =0.06125;//default
+	$pajak_sbn_ppip =0.01;//default
+} else {
+	$harga_anuitas_ppip =136;//default
+	
+	$kupon_sbn_ppip =0.06125;//Read kupon SBN/SBSN dari profil user
+	$pajak_sbn_ppip =0.01;//Read pajak SBN/SBSN dari profil user
+}
+
+
 $j=1; //counter hasil investasi percentile monthly (konversi dari tahunan ke bulanan)
 for ($i=1;$i<=$jml;$i++){
 	
 	$iuran[$i]=$gaji[$i]*$persentase_iuran_ppip; //hitung besar iuran
 	
 	//+++++++++++++++++++++++++++++++++++++
-	//F.3.2., 3.3., dan 3.4. Simulasi PPIP - tentukan hasil investasi percentile 95, 50, dan 05
-	$percentile_95_return_ppip_bulanan[$i]=$percentile_95_return_ppip[$j]; //menentukan percentile secara bulanan dari yang sebelumnya tahunan di monte carlo PPIP
-	$percentile_50_return_ppip_bulanan[$i]=$percentile_50_return_ppip[$j]; //menentukan percentile secara bulanan dari yang sebelumnya tahunan di monte carlo PPIP
-	$percentile_05_return_ppip_bulanan[$i]=$percentile_05_return_ppip[$j]; //menentukan percentile secara bulanan dari yang sebelumnya tahunan di monte carlo PPIP
+	//F.3.2., F.3.3., dan F.3.4. Simulasi PPIP - tentukan hasil investasi percentile 95, 50, dan 05
+	$percentile_95_return_ppip_bulanan[$i]=$percentile_95_return_monthly_ppip[$j]; //menentukan percentile secara bulanan dari yang sebelumnya tahunan di monte carlo PPIP
+	$percentile_50_return_ppip_bulanan[$i]=$percentile_50_return_monthly_ppip[$j]; //menentukan percentile secara bulanan dari yang sebelumnya tahunan di monte carlo PPIP
+	$percentile_05_return_ppip_bulanan[$i]=$percentile_05_return_monthly_ppip[$j]; //menentukan percentile secara bulanan dari yang sebelumnya tahunan di monte carlo PPIP
 	
 	if (fmod($i,12)==0){ //jika sudah bulan desember maka selanjutnya tahunnya bergeser
 		$j=$j+1;
@@ -670,26 +688,21 @@ for ($i=1;$i<=$jml;$i++){
 	}
 	
 	//++++++++++++++++++++++++++++++++++++++++
-	//F.3.15., F.3.15., dan F.3.15. Simulasi PPIP - Hitung anuitas bulanan untuk percentile 95, 50, dan 05 (hitung MP Bulanan bila dihitung menggunakan anuitas seumur hidup)
-	//Input: Read Harga anuitas dari profil user
+	//F.3.15., F.3.16., dan F.3.17. Simulasi PPIP - Hitung anuitas bulanan untuk percentile 95, 50, dan 05 (hitung MP Bulanan bila dihitung menggunakan anuitas seumur hidup)
 	
-	$harga_anuitas =136;//Read harga anuitas masing-masing user
 	
-	$anuitas_ppip_p95[$i]=$saldo_ppip_akhir_p95[$i] / $harga_anuitas;
-	$anuitas_ppip_p50[$i]=$saldo_ppip_akhir_p50[$i] / $harga_anuitas;
-	$anuitas_ppip_p05[$i]=$saldo_ppip_akhir_p05[$i] / $harga_anuitas;
+	$anuitas_ppip_p95[$i]=$saldo_ppip_akhir_p95[$i] / $harga_anuitas_ppip;
+	$anuitas_ppip_p50[$i]=$saldo_ppip_akhir_p50[$i] / $harga_anuitas_ppip;
+	$anuitas_ppip_p05[$i]=$saldo_ppip_akhir_p05[$i] / $harga_anuitas_ppip;
 	
 	
 	//++++++++++++++++++++++++++++++++++++++++
 	//F.3.18., F.3.19., dan F.3.20. Simulasi PPIP - Hitung kupon SBN/SBSN bulanan untuk percentile 95, 50, dan 05 (hitung MP Bulanan bila dihitung menggunakan kupon SBN/SBSN)
-	//Input: Read kupon SBN/SBSN dan beserta pajak dari profil user
 	
-	$kupon_sbn =0.06125;//Read kupon SBN/SBSN dari profil user
-	$pajak_sbn =0.01;//Read pajak SBN/SBSN dari profil user
 	
-	$kupon_sbn_ppip_p95[$i]=( $saldo_ppip_akhir_p95[$i] * $kupon_sbn *(1-$pajak_sbn))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 95
-	$kupon_sbn_ppip_p50[$i]=( $saldo_ppip_akhir_p50[$i] * $kupon_sbn *(1-$pajak_sbn))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 50
-	$kupon_sbn_ppip_p05[$i]=( $saldo_ppip_akhir_p05[$i] * $kupon_sbn *(1-$pajak_sbn))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 05
+	$kupon_sbn_ppip_p95[$i]=( $saldo_ppip_akhir_p95[$i] * $kupon_sbn_ppip *(1-$pajak_sbn_ppip))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 95
+	$kupon_sbn_ppip_p50[$i]=( $saldo_ppip_akhir_p50[$i] * $kupon_sbn_ppip *(1-$pajak_sbn_ppip))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 50
+	$kupon_sbn_ppip_p05[$i]=( $saldo_ppip_akhir_p05[$i] * $kupon_sbn_ppip *(1-$pajak_sbn_ppip))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 05
 	
 	//++++++++++++++++++++++++++++++++++++++++
 	//F.3.21., F.3.22., F.3.23., F.3.24., F.3.25., dan F.3.26., Hitung RR untuk anuitas dan kupon SBN/SBSN pada percentile 95, 50, dan 05
@@ -697,41 +710,287 @@ for ($i=1;$i<=$jml;$i++){
 	if ($gaji[$i]>0){
 		
 		//untuk anuitas
-		$rr_anuitas_p95[$i] = $anuitas_ppip_p95[$i] / $gaji[$i];
-		$rr_anuitas_p50[$i] = $anuitas_ppip_p50[$i] / $gaji[$i];
-		$rr_anuitas_p05[$i] = $anuitas_ppip_p05[$i] / $gaji[$i];
+		$rr_ppip_anuitas_p95[$i] = $anuitas_ppip_p95[$i] / $gaji[$i];
+		$rr_ppip_anuitas_p50[$i] = $anuitas_ppip_p50[$i] / $gaji[$i];
+		$rr_ppip_anuitas_p05[$i] = $anuitas_ppip_p05[$i] / $gaji[$i];
 		
 		//untuk kupon SBN/SBSN
-		$rr_kupon_sbn_p95[$i] = $kupon_sbn_ppip_p95[$i] / $gaji[$i];
-		$rr_kupon_sbn_p50[$i] = $kupon_sbn_ppip_p50[$i] / $gaji[$i];
-		$rr_kupon_sbn_p05[$i] = $kupon_sbn_ppip_p05[$i] / $gaji[$i];
+		$rr_ppip_kupon_sbn_p95[$i] = $kupon_sbn_ppip_p95[$i] / $gaji[$i];
+		$rr_ppip_kupon_sbn_p50[$i] = $kupon_sbn_ppip_p50[$i] / $gaji[$i];
+		$rr_ppip_kupon_sbn_p05[$i] = $kupon_sbn_ppip_p05[$i] / $gaji[$i];
 		
 	} else{
 		//untuk anuitas
-		$rr_anuitas_p95[$i] = 0;
-		$rr_anuitas_p50[$i] = 0;
-		$rr_anuitas_p05[$i] = 0;
+		$rr_ppip_anuitas_p95[$i] = 0;
+		$rr_ppip_anuitas_p50[$i] = 0;
+		$rr_ppip_anuitas_p05[$i] = 0;
 		
 		//untuk kupon SBN/SBSN
-		$rr_kupon_sbn_p95[$i] = 0;
-		$rr_kupon_sbn_p50[$i] = 0;
-		$rr_kupon_sbn_p05[$i] = 0;
+		$rr_ppip_kupon_sbn_p95[$i] = 0;
+		$rr_ppip_kupon_sbn_p50[$i] = 0;
+		$rr_ppip_kupon_sbn_p05[$i] = 0;
 	}
 		
 	//Output: Create $iuran[$i], $tambahan_iuran_ppip[$i], $percentile_95_return_ppip_bulanan[$i], $percentile_50_return_ppip_bulanan[$i], $percentile_05_return_ppip_bulanan[$i]
 	//output: Create $saldo_ppip_awal_p95[$i], $pengembangan_ppip_p95[$i], $saldo_ppip_akhir_p95[$i], $saldo_ppip_awal_p50[$i], $pengembangan_ppip_p50[$i], $saldo_ppip_akhir_p50[$i], $saldo_ppip_awal_p05[$i], $pengembangan_ppip_p05[$i], $saldo_ppip_akhir_p05[$i]
 	//Output: Create $anuitas_ppip_p95[$i], $anuitas_ppip_p50[$i], $anuitas_ppip_p05[$i], $kupon_sbn_ppip_p95[$i], $kupon_sbn_ppip_p50[$i], $kupon_sbn_ppip_p05[$i]
-	//Output: Create $rr_anuitas_p95[$i], $rr_anuitas_p50[$i], $rr_anuitas_p05[$i], $rr_kupon_sbn_p95[$i], $rr_kupon_sbn_p50[$i], $rr_kupon_sbn_p05[$i]
+	//Output: Create $rr_ppip_anuitas_p95[$i], $rr_ppip_anuitas_p50[$i], $rr_ppip_anuitas_p05[$i], $rr_ppip_kupon_sbn_p95[$i], $rr_ppip_kupon_sbn_p50[$i], $rr_ppip_kupon_sbn_p05[$i]
 	
 }
 
 
+//----------------------------------------------
+//F.4. Simulasi Personal Properti
+//F.4.1. dan F.4.2. Simulasi Properti - Hitung harga dan sewa properti
+//Input: Read harga properti, sewa tahunan, kenaikan harga properti, dan kenaikan harga sewa di profil user
+
+$saldo_personal_properti_input=0;// Read harga properti keuangan yang diinput di profil user
+$sewa_personal_properti_input=0;// Read harga properti keuangan yang diinput di profil user
+
+$naik_harga_properti=0.1; // Read kenaikan harga properti keuangan yang diinput di profil user
+$naik_sewa_properti=0.1; // Read kenaikan sewa properti keuangan yang diinput di profil user
 
 
+$jml=936; // jumlah bulan dari januari 2023 s.d. desember 2100
 
 
+for ($i=1;$i<=$jml;$i++){
+	if($i==$counter_saldo_personal_properti){ //tahun pertama ada saldonya
+		
+		$harga_properti[$i]=$saldo_personal_properti_input;
+		$sewa_properti[$i]=$sewa_personal_properti_input;
+		
+	} else if ($i>$counter_saldo_personal_properti) {
+		
+		if (fmod($i,12)==1){ //jika sudah bulan januari maka harga rumah dan sewa naik
+			
+			$harga_properti[$i]=$harga_properti[$i-1]*(1+$naik_harga_properti);
+			$sewa_properti[$i]=$sewa_properti[$i-1]*(1+$naik_sewa_properti);
+			
+		} else {
+			
+			$harga_properti[$i]=$harga_properti[$i-1];
+			$sewa_properti[$i]=$sewa_properti[$i-1];
+			
+		}
+		
+	} else {
+		
+		$harga_properti[$i]=0;
+		$sewa_properti[$i]=0;
+			
+	}
+
+	//+++++++++++++++++++++++++++++++++++
+	//F.4.3. Simulasi Properti - Hitung RR Properti
+	if ($gaji[$i]>0){
+		$rr_personal_properti[$i]=($sewa_properti[$i] / 12) / $gaji[$i];
+	} else {
+		$rr_personal_properti[$i]=0;
+	}
+}
 
 
+//---------------------------------------------------------
+//F.5. Simulasi PERSONAL_KEUANGAN
+//Input: variabel $gaji{$i] yang ada di memory serta flag pensiun, Read tambahan iuran personal_keuangan, Read Saldo PERSONAL_KEUANGAN
+
+//F.5.1. Simulasi PERSONAL_KEUANGAN - Hitung iuran
+
+$persentase_iuran_personal_keuangan=0.05; //Read besar iuran personal keuangan di profil user
+$saldo_personal_keuangan_input=0; // Read saldo personal_keuangan yang diinput (saldo diasumsikan diinput di awal bulan)
+
+$jml=936; // jumlah bulan dari januari 2023 s.d. desember 2100
+
+//nilai default pilihan pembayaran personal keuangan
+//Input: Read pilihan pembayaran personal keuangan, Read kupon SBN/SBSN dan beserta pajak dari profil user, Read Harga anuitas dari profil user
+//pembayaran personal_keuangan jika 1=anuitas; 2=kupon SBN/SBSN
+
+$pembayaran_personal_keuangan=1;//Read pilihan pembayaran personal_keuangan (pembayaran personal_keuangan jika 1=anuitas; 2=kupon SBN/SBSN)
+if($pembayaran_personal_keuangan==1){
+	$harga_anuitas_personal_keuangan =136;//Read harga anuitas masing-masing user
+	
+	$kupon_sbn_personal_keuangan =0.06125;//default
+	$pajak_sbn_personal_keuangan =0.01;//default
+} else {
+	$harga_anuitas_personal_keuangan =136;//default
+	
+	$kupon_sbn_personal_keuangan =0.06125;//Read kupon SBN/SBSN dari profil user
+	$pajak_sbn_personal_keuangan =0.01;//Read pajak SBN/SBSN dari profil user
+}
+
+$j=1; //counter hasil investasi percentile monthly (konversi dari tahunan ke bulanan)
+for ($i=1;$i<=$jml;$i++){
+	
+	$iuran_personal_keuangan[$i]=$gaji[$i]*$persentase_iuran_personal_keuangan; //hitung besar iuran
+	
+	//+++++++++++++++++++++++++++++++++++++
+	//F.5.2., F.5.3., dan F.5.4. Simulasi PERSONAL_KEUANGAN - tentukan hasil investasi percentile 95, 50, dan 05
+	$percentile_95_return_personal_bulanan[$i]=$percentile_95_return_monthly_personal[$j]; //menentukan percentile secara bulanan dari yang sebelumnya tahunan di monte carlo PERSONAL_KEUANGAN
+	$percentile_50_return_personal_bulanan[$i]=$percentile_50_return_monthly_personal[$j]; //menentukan percentile secara bulanan dari yang sebelumnya tahunan di monte carlo PERSONAL_KEUANGAN
+	$percentile_05_return_personal_bulanan[$i]=$percentile_05_return_monthly_personal[$j]; //menentukan percentile secara bulanan dari yang sebelumnya tahunan di monte carlo PERSONAL_KEUANGAN
+	
+	if (fmod($i,12)==0){ //jika sudah bulan desember maka selanjutnya tahunnya bergeser
+		$j=$j+1;
+	}
+	
+		
+	//+++++++++++++++++++++++++++++++++++++
+	//F.5.5., F.5.6., F.5.7., F.5.8., F.5.9., F.5.10., F.5.11., F.5.12., dan F.5.13. Simulasi PERSONAL_KEUANGAN - hitung percentile 95,50,05 untuk saldo awal, hasil pengembangan, dan saldo akhir
+	if($i==$counter_saldo_personal_keuangan){ //tahun pertama ada saldonya
+		
+		//percentile 95
+		$saldo_personal_keuangan_awal_p95[$i]=$saldo_personal_keuangan_input;
+		$pengembangan_personal_keuangan_p95[$i]= ($saldo_personal_keuangan_awal_p95[$i] + $iuran_personal_keuangan[$i] )* $percentile_95_return_personal_keuangan_bulanan[$i];
+		$saldo_personal_keuangan_akhir_p95[$i] = $saldo_personal_keuangan_awal_p95[$i] + $iuran_personal_keuangan[$i] + $pengembangan_personal_keuangan_p95[$i]; //saldo merupakan saldo akhir bulan
+		
+		//percentile 50
+		$saldo_personal_keuangan_awal_p50[$i]=$saldo_personal_keuangan_input;
+		$pengembangan_personal_keuangan_p50[$i]= ($saldo_personal_keuangan_awal_p50[$i] + $iuran_personal_keuangan[$i] )* $percentile_50_return_personal_keuangan_bulanan[$i];
+		$saldo_personal_keuangan_akhir_p50[$i] = $saldo_personal_keuangan_awal_p50[$i] + $iuran_personal_keuangan[$i] + $pengembangan_personal_keuangan_p50[$i]; //saldo merupakan saldo akhir bulan
+		
+		//percentile 05
+		$saldo_personal_keuangan_awal_p05[$i]=$saldo_personal_keuangan_input;
+		$pengembangan_personal_keuangan_p05[$i]= ($saldo_personal_keuangan_awal_p05[$i] + $iuran_personal_keuangan[$i] )* $percentile_05_return_personal_keuangan_bulanan[$i];
+		$saldo_personal_keuangan_akhir_p05[$i] = $saldo_personal_keuangan_awal_p05[$i] + $iuran_personal_keuangan[$i] + $pengembangan_personal_keuangan_p05[$i]; //saldo merupakan saldo akhir bulan
+		
+	} else if ($i>$counter_saldo_personal_keuangan) {
+		//percentile 95
+		$saldo_personal_keuangan_awal_p95[$i]=$saldo_personal_keuangan_akhir_p95[$i-1];
+		$pengembangan_personal_keuangan_p95[$i]= ($saldo_personal_keuangan_awal_p95[$i] + $iuran_personal_keuangan[$i] )* $percentile_95_return_personal_keuangan_bulanan[$i];
+		$saldo_personal_keuangan_akhir_p95[$i] = $saldo_personal_keuangan_awal_p95[$i] + $iuran_personal_keuangan[$i] + $pengembangan_personal_keuangan_p95[$i]; //saldo merupakan saldo akhir bulan
+		
+		//percentile 50
+		$saldo_personal_keuangan_awal_p50[$i]=$saldo_personal_keuangan_akhir_p50[$i-1];
+		$pengembangan_personal_keuangan_p50[$i]= ($saldo_personal_keuangan_awal_p50[$i] + $iuran_personal_keuangan[$i] )* $percentile_50_return_personal_keuangan_bulanan[$i];
+		$saldo_personal_keuangan_akhir_p50[$i] = $saldo_personal_keuangan_awal_p50[$i] + $iuran_personal_keuangan[$i] + $pengembangan_personal_keuangan_p50[$i]; //saldo merupakan saldo akhir bulan
+		
+		//percentile 05
+		$saldo_personal_keuangan_awal_p05[$i]=$saldo_personal_keuangan_akhir_p05[$i-1];
+		$pengembangan_personal_keuangan_p05[$i]= ($saldo_personal_keuangan_awal_p05[$i] + $iuran_personal_keuangan[$i] )* $percentile_05_return_personal_keuangan_bulanan[$i];
+		$saldo_personal_keuangan_akhir_p05[$i] = $saldo_personal_keuangan_awal_p05[$i] + $iuran_personal_keuangan[$i] + $pengembangan_personal_keuangan_p05[$i]; //saldo merupakan saldo akhir bulan
+		
+	} else{
+		//percentile 95
+		$saldo_personal_keuangan_awal_p95[$i]=0;
+		$pengembangan_personal_keuangan_p95[$i]= 0;
+		$saldo_personal_keuangan_akhir_p95[$i] = 0;
+		 
+		//percentile 50
+		$saldo_personal_keuangan_awal_p50[$i]=0;
+		$pengembangan_personal_keuangan_p50[$i]= 0;
+		$saldo_personal_keuangan_akhir_p50[$i] = 0;
+		 
+		//percentile 05
+		$saldo_personal_keuangan_awal_p05[$i]=0;
+		$pengembangan_personal_keuangan_p05[$i]= 0;
+		$saldo_personal_keuangan_akhir_p05[$i] = 0;
+		 
+	}
+	
+	//++++++++++++++++++++++++++++++++++++++++
+	//F.5.14., F.5.15., dan F.5.16. Simulasi PERSONAL_KEUANGAN - Hitung anuitas bulanan untuk percentile 95, 50, dan 05 (hitung MP Bulanan bila dihitung menggunakan anuitas seumur hidup)
+		
+	$anuitas_personal_keuangan_p95[$i]=$saldo_personal_keuangan_akhir_p95[$i] / $harga_anuitas_personal_keuangan;
+	$anuitas_personal_keuangan_p50[$i]=$saldo_personal_keuangan_akhir_p50[$i] / $harga_anuitas_personal_keuangan;
+	$anuitas_personal_keuangan_p05[$i]=$saldo_personal_keuangan_akhir_p05[$i] / $harga_anuitas_personal_keuangan;
+	
+	
+	//++++++++++++++++++++++++++++++++++++++++
+	//F.5.17., F.5.18., dan F.5.19. Simulasi PERSONAL_KEUANGAN - Hitung kupon SBN/SBSN bulanan untuk percentile 95, 50, dan 05 (hitung MP Bulanan bila dihitung menggunakan kupon SBN/SBSN)
+		
+	$kupon_sbn_personal_keuangan_p95[$i]=( $saldo_personal_keuangan_akhir_p95[$i] * $kupon_sbn_personal_keuangan *(1-$pajak_sbn_personal_keuangan))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 95
+	$kupon_sbn_personal_keuangan_p50[$i]=( $saldo_personal_keuangan_akhir_p50[$i] * $kupon_sbn_personal_keuangan *(1-$pajak_sbn_personal_keuangan))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 50
+	$kupon_sbn_personal_keuangan_p05[$i]=( $saldo_personal_keuangan_akhir_p05[$i] * $kupon_sbn_personal_keuangan *(1-$pajak_sbn_personal_keuangan))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 05
+	
+	//++++++++++++++++++++++++++++++++++++++++
+	//F.5.20., F.5.21., F.5.22., F.5.23., F.5.24., dan F.5.25., Hitung RR untuk anuitas dan kupon SBN/SBSN pada percentile 95, 50, dan 05
+	
+	if ($gaji[$i]>0){
+		
+		//untuk anuitas
+		$rr_personal_keuangan_anuitas_p95[$i] = $anuitas_personal_keuangan_p95[$i] / $gaji[$i];
+		$rr_personal_keuangan_anuitas_p50[$i] = $anuitas_personal_keuangan_p50[$i] / $gaji[$i];
+		$rr_personal_keuangan_anuitas_p05[$i] = $anuitas_personal_keuangan_p05[$i] / $gaji[$i];
+		
+		//untuk kupon SBN/SBSN
+		$rr_personal_keuangan_kupon_sbn_p95[$i] = $kupon_sbn_personal_keuangan_p95[$i] / $gaji[$i];
+		$rr_personal_keuangan_kupon_sbn_p50[$i] = $kupon_sbn_personal_keuangan_p50[$i] / $gaji[$i];
+		$rr_personal_keuangan_kupon_sbn_p05[$i] = $kupon_sbn_personal_keuangan_p05[$i] / $gaji[$i];
+		
+	} else{
+		//untuk anuitas
+		$rr_personal_keuangan_anuitas_p95[$i] = 0;
+		$rr_personal_keuangan_anuitas_p50[$i] = 0;
+		$rr_personal_keuangan_anuitas_p05[$i] = 0;
+		
+		//untuk kupon SBN/SBSN
+		$rr_personal_keuangan_kupon_sbn_p95[$i] = 0;
+		$rr_personal_keuangan_kupon_sbn_p50[$i] = 0;
+		$rr_personal_keuangan_kupon_sbn_p05[$i] = 0;
+	}
+		
+	//Output: Create $iuran_personal_keuangan[$i], $percentile_95_return_personal_keuangan_bulanan[$i], $percentile_50_return_personal_keuangan_bulanan[$i], $percentile_05_return_personal_keuangan_bulanan[$i]
+	//output: Create $saldo_personal_keuangan_awal_p95[$i], $pengembangan_personal_keuangan_p95[$i], $saldo_personal_keuangan_akhir_p95[$i], $saldo_personal_keuangan_awal_p50[$i], $pengembangan_personal_keuangan_p50[$i], $saldo_personal_keuangan_akhir_p50[$i], $saldo_personal_keuangan_awal_p05[$i], $pengembangan_personal_keuangan_p05[$i], $saldo_personal_keuangan_akhir_p05[$i]
+	//Output: Create $anuitas_personal_keuangan_p95[$i], $anuitas_personal_keuangan_p50[$i], $anuitas_personal_keuangan_p05[$i], $kupon_sbn_personal_keuangan_p95[$i], $kupon_sbn_personal_keuangan_p50[$i], $kupon_sbn_personal_keuangan_p05[$i]
+	//Output: Create $rr_personal_keuangan_anuitas_p95[$i], $rr_personal_keuangan_anuitas_p50[$i], $rr_personal_keuangan_anuitas_p05[$i], $rr_personal_keuangan_kupon_sbn_p95[$i], $rr_personal_keuangan_kupon_sbn_p50[$i], $rr_personal_keuangan_kupon_sbn_p05[$i]
+	
+}
+
+//----------------------------------------------------------------------------
+//G.1. Hitung indikator dashboard - lokasi pensiun
+//Input: Read flag pensiun
+
+$jml=936; // jumlah bulan dari januari 2023 s.d. desember 2100
+$counter_pensiun=0; //counter posisi pensiun
+
+for ($i=1;$i<=$jml;$i++){
+	if ($i==1){
+		if ($flag_pensiun[$i]==1){
+			$counter_pensiun=$i;// pada saat bulan ini sudah pensiun. jadi saldo yang ditampilkan adalah saldo awal
+		}
+	} else {
+		if ($flag_pensiun[$i]==1 && $flag_pensiun[$i-1]==0){
+			$counter_pensiun=$i; // pada saat bulan ini sudah pensiun. jadi saldo yang ditampilkan adalah saldo akhir untuk bulan sebelumnya.
+		}
+	}
+	//$flag_pensiun[$i]=1;//sudah pensiun
+}
+
+//----------------------------------------------------------------------------
+//G.2. Hitung indikator dashboard - posisi saat pensiun
+
+//G.2.1. RR pada dashboard
+
+$dashboard_rr_ppmp=$rr_ppmp[$counter_pensiun - 1];
+
+//pembayaran PPIP jika 1=anuitas; 2=kupon SBN/SBSN
+if($pembayaran_ppip==1){
+
+	$dashboard_rr_ppip_min=$rr_ppip_anuitas_p05[$counter_pensiun - 1];
+	$dashboard_rr_ppip_med=$rr_ppip_anuitas_p50[$counter_pensiun - 1];
+	$dashboard_rr_ppip_max=$rr_ppip_anuitas_p95[$counter_pensiun - 1];
+		
+} else {
+	
+	$dashboard_rr_ppip_min=$rr_ppip_kupon_sbn_p05[$counter_pensiun - 1];
+	$dashboard_rr_ppip_med=$rr_ppip_kupon_sbn_p50[$counter_pensiun - 1];
+	$dashboard_rr_ppip_max=$rr_ppip_kupon_sbn_p95[$counter_pensiun - 1];
+}
+
+//pembayaran personal keuangan jika 1=anuitas; 2=kupon SBN/SBSN
+if($pembayaran_personal_keuangan==1){
+
+	$dashboard_rr_personal_keuangan_min=$rr_personal_keuangan_anuitas_p05[$counter_pensiun - 1];
+	$dashboard_rr_personal_keuangan_med=$rr_personal_keuangan_anuitas_p50[$counter_pensiun - 1];
+	$dashboard_rr_personal_keuangan_max=$rr_personal_keuangan_anuitas_p95[$counter_pensiun - 1];
+		
+} else {
+	
+	$dashboard_rr_personal_keuangan_min=$rr_personal_keuangan_kupon_sbn_p05[$counter_pensiun - 1];
+	$dashboard_rr_personal_keuangan_med=$rr_personal_keuangan_kupon_sbn_p50[$counter_pensiun - 1];
+	$dashboard_rr_personal_keuangan_max=$rr_personal_keuangan_kupon_sbn_p95[$counter_pensiun - 1];
+}
 
 
 
