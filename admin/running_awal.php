@@ -691,7 +691,7 @@ for ($i=1;$i<=$jml;$i++){
 	$kupon_sbn_ppip_p50[$i]=( $saldo_ppip_akhir_p50[$i] * $kupon_sbn *(1-$pajak_sbn))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 50
 	$kupon_sbn_ppip_p05[$i]=( $saldo_ppip_akhir_p05[$i] * $kupon_sbn *(1-$pajak_sbn))/12; //pembayaran bulanan dari kupon SBN/SBSN percentile 05
 	
-	/++++++++++++++++++++++++++++++++++++++++
+	//++++++++++++++++++++++++++++++++++++++++
 	//F.3.21., F.3.22., F.3.23., F.3.24., F.3.25., dan F.3.26., Hitung RR untuk anuitas dan kupon SBN/SBSN pada percentile 95, 50, dan 05
 	
 	if ($gaji[$i]>0){
