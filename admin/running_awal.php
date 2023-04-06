@@ -552,7 +552,8 @@ for ($i=1;$i<=$jml;$i++){
 		$status_mp=1;//untuk hybrid ppmp ppip
 		
 		if ($flag_pensiun[$i]==0){ //belum pensiun
-			$masa_dinas=$masa_dinas_tahun[$i]+($masa_dinas_bulan[$i] / 12);
+			$masa_dinas_sementara=$masa_dinas_tahun[$i]+($masa_dinas_bulan[$i] / 12);
+			$masa_dinas=min($masa_dinas_sementara,32); //maksimum masa dinas yang bisa diabsorb oleh ppmp adalah 32 tahun
 			$jumlah_ppmp[$i]=0.025*$masa_dinas*$phdp[$i]; //rumus besar MP dalam PPMP
 			$rr_ppmp[$i]=$jumlah_ppmp[$i] / $gaji[$i]; //rumus mencari replacement ratio dalam ppmp
 			
@@ -960,9 +961,8 @@ for ($i=1;$i<=$jml;$i++){
 //----------------------------------------------------------------------------
 //G.2. Hitung indikator dashboard - posisi saat pensiun
 
+//++++++++++++++++++++++++++++++++
 //G.2.1. RR pada dashboard
-
-$dashboard_rr_ppmp=$rr_ppmp[$counter_pensiun - 1];
 
 //pembayaran PPIP jika 1=anuitas; 2=kupon SBN/SBSN
 if($pembayaran_ppip==1){
@@ -990,6 +990,107 @@ if($pembayaran_personal_keuangan==1){
 	$dashboard_rr_personal_keuangan_min=$rr_personal_keuangan_kupon_sbn_p05[$counter_pensiun - 1];
 	$dashboard_rr_personal_keuangan_med=$rr_personal_keuangan_kupon_sbn_p50[$counter_pensiun - 1];
 	$dashboard_rr_personal_keuangan_max=$rr_personal_keuangan_kupon_sbn_p95[$counter_pensiun - 1];
+}
+
+$dashboard_rr_personal_properti=$rr_personal_properti[$counter_pensiun - 1];
+
+//total rr
+//$status_mp=1 untuk hybrid ppmp ppip dan $status_mp=2 untuk ppip murni
+if ($status_mp==1){
+	$dashboard_rr_ppmp=$rr_ppmp[$counter_pensiun - 1];
+	
+	$dashboard_rr_total_min=$dashboard_rr_ppmp +  $dashboard_rr_ppip_min + $dashboard_rr_personal_keuangan_min + $dashboard_rr_personal_properti;
+	$dashboard_rr_total_med=$dashboard_rr_ppmp +  $dashboard_rr_ppip_med + $dashboard_rr_personal_keuangan_med + $dashboard_rr_personal_properti;
+	$dashboard_rr_total_max=$dashboard_rr_ppmp +  $dashboard_rr_ppip_max + $dashboard_rr_personal_keuangan_max + $dashboard_rr_personal_properti;
+
+} else {
+	$dashboard_rr_total_min=$dashboard_rr_ppip_min + $dashboard_rr_personal_keuangan_min + $dashboard_rr_personal_properti;
+	$dashboard_rr_total_med=$dashboard_rr_ppip_med + $dashboard_rr_personal_keuangan_med + $dashboard_rr_personal_properti;
+	$dashboard_rr_total_max=$dashboard_rr_ppip_max + $dashboard_rr_personal_keuangan_max + $dashboard_rr_personal_properti;
+}
+
+//++++++++++++++++++++++++++++++++
+//G.2.2. Penghasilan Bulanan pada dashboard
+
+//pembayaran PPIP jika 1=anuitas; 2=kupon SBN/SBSN
+if($pembayaran_ppip==1){
+
+	$dashboard_penghasilan_bulanan_ppip_min=$anuitas_ppip_p05[$counter_pensiun - 1];
+	$dashboard_penghasilan_bulanan_ppip_med=$anuitas_ppip_p50[$counter_pensiun - 1];
+	$dashboard_penghasilan_bulanan_ppip_max=$anuitas_ppip_p95[$counter_pensiun - 1];
+		
+} else {
+	
+	$dashboard_penghasilan_bulanan_ppip_min=$kupon_sbn_ppip_p05[$counter_pensiun - 1];
+	$dashboard_penghasilan_bulanan_ppip_med=$kupon_sbn_ppip_p50[$counter_pensiun - 1];
+	$dashboard_penghasilan_bulanan_ppip_max=$kupon_sbn_ppip_p95[$counter_pensiun - 1];
+}
+
+//pembayaran personal keuangan jika 1=anuitas; 2=kupon SBN/SBSN
+if($pembayaran_personal_keuangan==1){
+
+	$dashboard_penghasilan_bulanan_personal_keuangan_min=$anuitas_personal_keuangan_p05[$counter_pensiun - 1];
+	$dashboard_penghasilan_bulanan_personal_keuangan_med=$anuitas_personal_keuangan_p50[$counter_pensiun - 1];
+	$dashboard_penghasilan_bulanan_personal_keuangan_max=$anuitas_personal_keuangan_p95[$counter_pensiun - 1];
+		
+} else {
+	
+	$dashboard_penghasilan_bulanan_personal_keuangan_min=$kupon_sbn_personal_keuangan_p05[$counter_pensiun - 1];
+	$dashboard_penghasilan_bulanan_personal_keuangan_med=$kupon_sbn_personal_keuangan_p50[$counter_pensiun - 1];
+	$dashboard_penghasilan_bulanan_personal_keuangan_max=$kupon_sbn_personal_keuangan_p95[$counter_pensiun - 1];
+}
+
+$dashboard_penghasilan_bulanan_personal_properti=$sewa_properti[$counter_pensiun - 1] / 12;
+
+//total penghasilan bulanan
+//$status_mp=1 untuk hybrid ppmp ppip dan $status_mp=2 untuk ppip murni
+if ($status_mp==1){
+	$dashboard_penghasilan_bulanan_ppmp=$jumlah_ppmp[$counter_pensiun - 1];
+	
+	$dashboard_penghasilan_bulanan_total_min=$dashboard_penghasilan_bulanan_ppmp +  $dashboard_penghasilan_bulanan_ppip_min + $dashboard_penghasilan_bulanan_personal_keuangan_min + $dashboard_penghasilan_bulanan_personal_properti;
+	$dashboard_penghasilan_bulanan_total_med=$dashboard_penghasilan_bulanan_ppmp +  $dashboard_penghasilan_bulanan_ppip_med + $dashboard_penghasilan_bulanan_personal_keuangan_med + $dashboard_penghasilan_bulanan_personal_properti;
+	$dashboard_penghasilan_bulanan_total_max=$dashboard_penghasilan_bulanan_ppmp +  $dashboard_penghasilan_bulanan_ppip_max + $dashboard_penghasilan_bulanan_personal_keuangan_max + $dashboard_penghasilan_bulanan_personal_properti;
+
+} else {
+	$dashboard_penghasilan_bulanan_total_min=$dashboard_penghasilan_bulanan_ppip_min + $dashboard_penghasilan_bulanan_personal_keuangan_min + $dashboard_penghasilan_bulanan_personal_properti;
+	$dashboard_penghasilan_bulanan_total_med=$dashboard_penghasilan_bulanan_ppip_med + $dashboard_penghasilan_bulanan_personal_keuangan_med + $dashboard_penghasilan_bulanan_personal_properti;
+	$dashboard_penghasilan_bulanan_total_max=$dashboard_penghasilan_bulanan_ppip_max + $dashboard_penghasilan_bulanan_personal_keuangan_max + $dashboard_penghasilan_bulanan_personal_properti;
+}
+
+//++++++++++++++++++++++++++++++++
+//G.2.3. present value Penghasilan Bulanan pada dashboard
+//Input: Read sisa masa kerja saat membuka
+$tahun_ini=2023;//Read current date untuk tahun
+$bulan_ini=4;////Read current date untuk bulan
+#inflasi=0.04;//Read asumsi inflasi yang di admin
+
+$tahun=$sisa_kerja_tahun[$i];//Read sisa masa kerja tahun untuk current date
+$bulan= $sisa_kerja_bulan[$i];//Read sisa masa kerja bulan untuk current date
+
+$dashboard_penghasilan_bulanan_ppip_min_pv=$dashboard_penghasilan_bulanan_ppip_min / ((1+$inflasi)^($tahun+($bulan/12)));
+$dashboard_penghasilan_bulanan_ppip_med_pv=$dashboard_penghasilan_bulanan_ppip_med / ((1+$inflasi)^($tahun+($bulan/12)));
+$dashboard_penghasilan_bulanan_ppip_max_pv=$dashboard_penghasilan_bulanan_ppip_max / ((1+$inflasi)^($tahun+($bulan/12)));
+
+$dashboard_penghasilan_bulanan_personal_keuangan_min_pv=$dashboard_penghasilan_bulanan_personal_keuangan_min / ((1+$inflasi)^($tahun+($bulan/12)));
+$dashboard_penghasilan_bulanan_personal_keuangan_med_pv=$dashboard_penghasilan_bulanan_personal_keuangan_min / ((1+$inflasi)^($tahun+($bulan/12)));
+$dashboard_penghasilan_bulanan_personal_keuangan_max_pv=$dashboard_penghasilan_bulanan_personal_keuangan_min / ((1+$inflasi)^($tahun+($bulan/12)));
+
+$dashboard_penghasilan_bulanan_personal_properti_pv=$dashboard_penghasilan_bulanan_personal_properti / ((1+$inflasi)^($tahun+($bulan/12)));
+
+//total penghasilan bulanan
+//$status_mp=1 untuk hybrid ppmp ppip dan $status_mp=2 untuk ppip murni
+if ($status_mp==1){
+	$dashboard_penghasilan_bulanan_ppmp_pv=$dashboard_penghasilan_bulanan_ppmp / ((1+$inflasi)^($tahun+($bulan/12)));
+	
+	$dashboard_penghasilan_bulanan_total_min_pv=$dashboard_penghasilan_bulanan_ppmp_pv +  $dashboard_penghasilan_bulanan_ppip_min_pv + $dashboard_penghasilan_bulanan_personal_keuangan_min_pv + $dashboard_penghasilan_bulanan_personal_properti_pv;
+	$dashboard_penghasilan_bulanan_total_med_pv=$dashboard_penghasilan_bulanan_ppmp_pv +  $dashboard_penghasilan_bulanan_ppip_med_pv + $dashboard_penghasilan_bulanan_personal_keuangan_med_pv + $dashboard_penghasilan_bulanan_personal_properti_pv;
+	$dashboard_penghasilan_bulanan_total_max_pv=$dashboard_penghasilan_bulanan_ppmp_pv +  $dashboard_penghasilan_bulanan_ppip_max_pv + $dashboard_penghasilan_bulanan_personal_keuangan_max_pv + $dashboard_penghasilan_bulanan_personal_properti_pv;
+
+} else {
+	$dashboard_penghasilan_bulanan_total_min_pv=$dashboard_penghasilan_bulanan_ppip_min_pv + $dashboard_penghasilan_bulanan_personal_keuangan_min_pv + $dashboard_penghasilan_bulanan_personal_properti_pv;
+	$dashboard_penghasilan_bulanan_total_med_pv=$dashboard_penghasilan_bulanan_ppip_med_pv + $dashboard_penghasilan_bulanan_personal_keuangan_med_pv + $dashboard_penghasilan_bulanan_personal_properti_pv;
+	$dashboard_penghasilan_bulanan_total_max_pv=$dashboard_penghasilan_bulanan_ppip_max_pv + $dashboard_penghasilan_bulanan_personal_keuangan_max_pv + $dashboard_penghasilan_bulanan_personal_properti_pv;
+
 }
 
 
